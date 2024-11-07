@@ -1,8 +1,8 @@
 package com.visioncameratextrecognition
 
+import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
-import android.media.Image
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.google.android.gms.tasks.Task
@@ -18,7 +18,6 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mrousavy.camera.frameprocessors.Frame
 import com.mrousavy.camera.frameprocessors.FrameProcessorPlugin
 import com.mrousavy.camera.frameprocessors.VisionCameraProxy
-import java.util.HashMap
 
 class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<String, Any>?) :
     FrameProcessorPlugin() {
@@ -44,9 +43,25 @@ class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<S
 
     override fun callback(frame: Frame, arguments: Map<String, Any>?): HashMap<String, Any>? {
         val data = WritableNativeMap()
-        val mediaImage: Image = frame.image
-        val image =
-            InputImage.fromMediaImage(mediaImage, frame.imageProxy.imageInfo.rotationDegrees)
+        var bm: Bitmap? = BitmapUtils.getBitmap(frame)
+        if (bm === null) return null
+        if (arguments != null && arguments.containsKey("scanRegion")) {
+            val scanRegion = arguments["scanRegion"] as Map<*, *>?
+            val left = (scanRegion!!["left"] as Double) / 100.0 * bm.width
+            val top = (scanRegion["top"] as Double) / 100.0 * bm.height
+            val width = (scanRegion["width"] as Double) / 100.0 * bm.width
+            val height = (scanRegion["height"] as Double) / 100.0 * bm.height
+            bm = Bitmap.createBitmap(
+                bm,
+                left.toInt(),
+                top.toInt(),
+                width.toInt(),
+                height.toInt(),
+                null,
+                false
+            )
+        }
+        val image = InputImage.fromBitmap(bm,frame.imageProxy.imageInfo.rotationDegrees);
         val task: Task<Text> = recognizer.process(image)
         try {
             val text: Text = Tasks.await(task)

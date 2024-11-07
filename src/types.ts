@@ -86,26 +86,35 @@ export type CameraTypes = {
   );;
 
 
+export type ScanRegion = {
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+}
+
+export type ScanTextConfig = { scanRegion: ScanRegion }
 
 export type TextRecognitionPlugin = {
-  scanText: (frame: Frame) => Text[];
+  scanText: (frame: Frame, config?: ScanTextConfig) => Text;
 };
+
 export type TranslatorPlugin = {
   translate: (frame: Frame) => string;
 };
 
 export type Text = {
-  blocks: BlocksData;
+  blocks: BlocksData[];
   resultText: string;
 };
 
-type BlocksData = [
+type BlocksData = {
   blockFrame: FrameType,
   blockCornerPoints: CornerPointsType,
   lines: LinesData,
   blockLanguages: string[] | [],
   blockText: string,
-];
+};
 
 type CornerPointsType = [{ x: number; y: number }];
 
