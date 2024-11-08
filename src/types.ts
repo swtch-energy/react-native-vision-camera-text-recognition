@@ -68,8 +68,16 @@ export type Languages =
   | 'vi'
   | 'cy';
 
+export type ScanRegion = {
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+}
+
 export type TextRecognitionOptions = {
   language: 'latin' | 'chinese' | 'devanagari' | 'japanese' | 'korean';
+  scanRegion?: ScanRegion
 };
 
 export type TranslatorOptions = {
@@ -85,18 +93,8 @@ export type CameraTypes = {
   | { mode: 'translate'; options: TranslatorOptions }
   );;
 
-
-export type ScanRegion = {
-  left: number,
-  top: number,
-  width: number,
-  height: number,
-}
-
-export type ScanTextConfig = { scanRegion: ScanRegion }
-
 export type TextRecognitionPlugin = {
-  scanText: (frame: Frame, config?: ScanTextConfig) => Text;
+  scanText: (frame: Frame) => Text;
 };
 
 export type TranslatorPlugin = {

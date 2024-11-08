@@ -12,6 +12,7 @@ import MLKitCommon
 public class VisionCameraTextRecognition: FrameProcessorPlugin {
 
     private var textRecognizer = TextRecognizer()
+    private var scanRegion: [String: Int]? = nil
     private static let latinOptions = TextRecognizerOptions()
     private static let chineseOptions = ChineseTextRecognizerOptions()
     private static let devanagariOptions = DevanagariTextRecognizerOptions()
@@ -23,6 +24,7 @@ public class VisionCameraTextRecognition: FrameProcessorPlugin {
     public override init(proxy: VisionCameraProxyHolder, options: [AnyHashable: Any]! = [:]) {
         super.init(proxy: proxy, options: options)
         let language = options["language"] as? String ?? "latin"
+        scanRegion = options["scanRegion"] as? [String: Int]
         switch language {
         case "chinese":
             self.textRecognizer = TextRecognizer.textRecognizer(options: VisionCameraTextRecognition.chineseOptions)
@@ -42,7 +44,6 @@ public class VisionCameraTextRecognition: FrameProcessorPlugin {
         let buffer = frame.buffer
         var image: VisionImage?;
         do {
-            let scanRegion = arguments?["scanRegion"] as? [String: Int]
             if scanRegion != nil {
                 guard let pixelBuffer = CMSampleBufferGetImageBuffer(buffer) else {
                     return [:]

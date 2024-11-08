@@ -23,6 +23,7 @@ class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<S
     FrameProcessorPlugin() {
 
     private var recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private var scanRegion: Map<*, *>? = null
     private val latinOptions = TextRecognizerOptions.DEFAULT_OPTIONS
     private val chineseOptions = ChineseTextRecognizerOptions.Builder().build()
     private val devanagariOptions = DevanagariTextRecognizerOptions.Builder().build()
@@ -31,6 +32,7 @@ class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<S
 
     init {
         val language = options?.get("language").toString()
+        scanRegion =  options?.get("scanRegion") as Map<*, *>?
         recognizer = when (language) {
             "latin" -> TextRecognition.getClient(latinOptions)
             "chinese" -> TextRecognition.getClient(chineseOptions)
@@ -45,12 +47,11 @@ class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<S
         val data = WritableNativeMap()
         var bm: Bitmap? = BitmapUtils.getBitmap(frame)
         if (bm === null) return null
-        if (arguments != null && arguments.containsKey("scanRegion")) {
-            val scanRegion = arguments["scanRegion"] as Map<*, *>?
+        if (scanRegion != null) {
             val left = (scanRegion!!["left"] as Double) / 100.0 * bm.width
-            val top = (scanRegion["top"] as Double) / 100.0 * bm.height
-            val width = (scanRegion["width"] as Double) / 100.0 * bm.width
-            val height = (scanRegion["height"] as Double) / 100.0 * bm.height
+            val top = (scanRegion!!["top"] as Double) / 100.0 * bm.height
+            val width = (scanRegion!!["width"] as Double) / 100.0 * bm.width
+            val height = (scanRegion!!["height"] as Double) / 100.0 * bm.height
             bm = Bitmap.createBitmap(
                 bm,
                 left.toInt(),
