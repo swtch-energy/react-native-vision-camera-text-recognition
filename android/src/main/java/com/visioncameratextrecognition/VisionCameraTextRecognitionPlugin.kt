@@ -3,6 +3,7 @@ package com.visioncameratextrecognition
 import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
+import android.media.Image
 import com.facebook.react.bridge.WritableNativeArray
 import com.facebook.react.bridge.WritableNativeMap
 import com.google.android.gms.tasks.Task
@@ -45,9 +46,10 @@ class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<S
 
     override fun callback(frame: Frame, arguments: Map<String, Any>?): HashMap<String, Any>? {
         val data = WritableNativeMap()
-        var bm: Bitmap? = BitmapUtils.getBitmap(frame)
-        if (bm === null) return null
+        var image: InputImage? = null
         if (scanRegion != null) {
+            var bm: Bitmap? = BitmapUtils.getBitmap(frame)
+            if (bm === null) return null
             val left = (scanRegion!!["left"] as Double) / 100.0 * bm.width
             val top = (scanRegion!!["top"] as Double) / 100.0 * bm.height
             val width = (scanRegion!!["width"] as Double) / 100.0 * bm.width
@@ -61,8 +63,11 @@ class VisionCameraTextRecognitionPlugin(proxy: VisionCameraProxy, options: Map<S
                 null,
                 false
             )
+            image = InputImage.fromBitmap(bm,frame.imageProxy.imageInfo.rotationDegrees);
+        } else {
+            val mediaImage: Image = frame.image
+            image = InputImage.fromMediaImage(mediaImage, frame.imageProxy.imageInfo.rotationDegrees)
         }
-        val image = InputImage.fromBitmap(bm,frame.imageProxy.imageInfo.rotationDegrees);
         val task: Task<Text> = recognizer.process(image)
         try {
             val text: Text = Tasks.await(task)
